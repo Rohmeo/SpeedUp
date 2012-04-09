@@ -10,16 +10,19 @@ typedef struct{
 
 __global__ void matrixProduct(Matrix, Matrix, Matrix);
 
+matrixProduct(Matrix, Matrix, int, int, int);
+
 main()
 {
 	//Declare vars, constants
 	int const MatSize=9;
-	Matrix Matrix1, Matrix2, Matrix3, Result;
+	Matrix Matrix1, Matrix2, Result, Res_Check;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result;
 	
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
 	Matrix2.width = MatSize; Matrix2.height = MatSize;
 	Result.width = MatSize; Result.height = MatSize;
+	Res_Check.width = MatSize; Res_Check.height = MatSize;
 	Matrix3.width = MatSize; Matrix3.height = MatSize;
 	 
 	dim3 blockSize(MatSize+1,MatSize+1);
@@ -33,6 +36,7 @@ main()
 	Matrix2.elements = (int*) malloc(MemSize);
 	Matrix3.elements = (int*) malloc(MemSize);
 	Result.elements = (int*) malloc(MemSize);
+	Res_Check.elements = (int*) malloc(MemSize);
 	
 	//Initialize matrices with random values
 	for(i=0;i<=MatSize;i++)
@@ -99,7 +103,33 @@ main()
 		elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
 	}
 	printf("Elapsed Time: %ld \n",/*((elapsed.tv_sec)*1000000)+*/(elapsed.tv_usec));
+	
+	//Check the output for errors
+	for(i=0;i<=MatSize;i++)
+	{
+		for(j=0;j<=MatSize;j++)
+		{
+		Res_Check.elements[(i*Res_Check.width)+j] = matrixProduct(Matrix1, Matrix2, i, j, Res_Check.width);
+		if(Res_Check.elements[(i*Res_Check.width)+j] != Result.elements[(i*Result.width)+j]){
+			printf("Error found in row %d, column %d\n",i,j);
+		}
+	}
+	printf("Error Check finished");
+	
 }
+
+
+int matrixProduct(Matrix Mat1, Mat2,int row, int col, int width)
+{
+	int k,sum;
+	sum=0;
+	for(k=0;k<=Res_Check.width;k++)
+	{
+		sum=sum+(Mat1[row][k]*Mat2[k][col]);
+	}
+	return sum;
+}
+
 
 __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res)
 {
