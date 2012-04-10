@@ -10,7 +10,7 @@ typedef struct{
 
 __global__ void matrixProduct(Matrix, Matrix, Matrix);
 
-matrixProduct(Matrix, Matrix, int, int, int);
+int matrixProduct(Matrix, Matrix, int, int, int);
 
 main()
 {
@@ -23,7 +23,6 @@ main()
 	Matrix2.width = MatSize; Matrix2.height = MatSize;
 	Result.width = MatSize; Result.height = MatSize;
 	Res_Check.width = MatSize; Res_Check.height = MatSize;
-	Matrix3.width = MatSize; Matrix3.height = MatSize;
 	 
 	dim3 blockSize(MatSize+1,MatSize+1);
 	dim3 gridSize(1,1);
@@ -34,7 +33,6 @@ main()
 	size_t MemSize = (MatSize+1) * (MatSize+1) * sizeof(int);
 	Matrix1.elements = (int*) malloc(MemSize);
 	Matrix2.elements = (int*) malloc(MemSize);
-	Matrix3.elements = (int*) malloc(MemSize);
 	Result.elements = (int*) malloc(MemSize);
 	Res_Check.elements = (int*) malloc(MemSize);
 	
@@ -59,8 +57,6 @@ main()
 	dev_Matrix2.height = Matrix2.height; dev_Matrix2.width = Matrix2.width;
 	cudaMalloc((void**)&dev_Matrix2.elements,MemSize);
 	cudaMemcpy(dev_Matrix2.elements, Matrix2.elements, MemSize, cudaMemcpyHostToDevice);
-
-	cudaMemcpy(Matrix3.elements, dev_Matrix2.elements, MemSize, cudaMemcpyDeviceToHost);
 	
 	dev_Result.height = Result.height; dev_Result.width = Result.width;
 	cudaMalloc((void**)&dev_Result.elements,MemSize);
@@ -76,7 +72,7 @@ main()
 	for(i=0;i<=MatSize;i++)
 	{
 		for(j=0;j<=MatSize;j++)
-			printf("%d\t",Matrix3.elements[(i*Matrix3.width)+j]);
+			printf("%d\t",Matrix1.elements[(i*Matrix1.width)+j]);
 		printf("\n");
 	}
 	printf("Matrix 2:\n");
@@ -113,19 +109,20 @@ main()
 		if(Res_Check.elements[(i*Res_Check.width)+j] != Result.elements[(i*Result.width)+j]){
 			printf("Error found in row %d, column %d\n",i,j);
 		}
+		}
 	}
 	printf("Error Check finished");
 	
 }
 
 
-int matrixProduct(Matrix Mat1, Mat2,int row, int col, int width)
+int matrixProduct(Matrix Mat1, Matrix Mat2,int row, int col, int width)
 {
 	int k,sum;
 	sum=0;
-	for(k=0;k<=Res_Check.width;k++)
+	for(k=0;k<=width;k++)
 	{
-		sum=sum+(Mat1[row][k]*Mat2[k][col]);
+		sum=sum+(Mat1.elements[(row*width)+k]*Mat2.elements[(k*width)+col]);
 	}
 	return sum;
 }
