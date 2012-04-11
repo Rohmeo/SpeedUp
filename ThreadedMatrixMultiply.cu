@@ -11,6 +11,7 @@ typedef struct{
 __global__ void matrixProduct(Matrix, Matrix, Matrix);
 
 int matrixProduct(Matrix, Matrix, int, int);
+void printMatrix(Matrix, char[]);
 
 main()
 {
@@ -37,12 +38,12 @@ main()
 	Res_Check.elements = (int*) malloc(MemSize);
 	
 	//Initialize matrices with random values
-	for(i=0;i<=MatSize;i++)
+	for(i=1;i<=MatSize;i++)
 	{
-		for(j=1;j<=MatSize+1;j++)
+		for(j=1;j<=MatSize;j++)
 		{
-			Matrix1.elements[(i*Matrix1.width+j)-1]=(i*Matrix1.width+j)-1;
-			Matrix2.elements[(i*Matrix1.width+j)-1]=(i*Matrix1.width+j)-1;
+			Matrix1.elements[(i*Matrix1.width)+j]=(i*Matrix1.width)+j;
+			Matrix2.elements[(i*Matrix1.width)+j]=(i*Matrix1.width)+j;
 		}
 	}
 	gettimeofday(&start,NULL);
@@ -68,34 +69,19 @@ main()
 	
 	gettimeofday(&end,NULL);
 	printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
-	printf("Matrix 1:\n");
-	for(i=0;i<=MatSize;i++)
-	{
-		for(j=1;j<=MatSize+1;j++)
-			printf("%d\t",Matrix1.elements[((i*Matrix1.width)+j)-1]);
-		printf("\n");
-	}
-	printf("Matrix 2:\n");
-	for(i=0;i<=MatSize;i++)
-		{
-			for(j=1;j<=MatSize+1;j++)
-				printf("%d\t",Matrix2.elements[((i*Matrix2.width)+j)-1]);
-			printf("\n");
-		}
-	printf("Result:\n");
-	for(i=0;i<=MatSize;i++)
-		{
-			for(j=1;j<=MatSize+1;j++)
-				printf("%d\t",Result.elements[((i*Result.width)+j)-1]);
-			printf("\n");
-		}
+	
+	printMatrix(Matrix1,"Matrix 1\n");
+	printMatrix(Matrix2, "Matrix 2\n");
+	printMatrix(Result, "Result Matrix\n");
 	//Compute time elapsed
 	
 	elapsed.tv_sec = (end.tv_sec-start.tv_sec);
-	if(end.tv_usec > start.tv_usec){
+	if(end.tv_usec > start.tv_usec)
+	{
 		elapsed.tv_usec = (end.tv_usec-start.tv_usec);
 	}
-	else{
+	else
+	{
 		elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
 	}
 	printf("Elapsed Time: %ld \n",/*((elapsed.tv_sec)*1000000)+*/(elapsed.tv_usec));
@@ -105,36 +91,39 @@ main()
 	{
 		for(j=1;j<=MatSize+1;j++)
 		{
-		Res_Check.elements[((i*Res_Check.width)+j)-1] = matrixProduct(Matrix1, Matrix2, i, j);
-		if(Res_Check.elements[((i*Res_Check.width)+j)-1] != Result.elements[((i*Result.width)+j)-1]){
-			printf("Error found in row %d, column %d\n",i,j);
-			printf("Value in parallel: %d, Value in host comp: %d\n",Result.elements[((i*Result.width)+j)-1],Res_Check.elements[((i*Res_Check.width)+j)-1]);
-		}
+			Res_Check.elements[(i*Res_Check.width)+j] = matrixProduct(Matrix1, Matrix2, i, j);
+			if(Res_Check.elements[(i*Res_Check.width)+j] != Result.elements[(i*Result.width)+j])
+			{
+				printf("Error found in row %d, column %d\n",i,j);
+				printf("Value in parallel: %d, Value in host comp: %d\n",Result.elements[(i*Result.width)+j],Res_Check.elements[(i*Res_Check.width)+j]);
+			}
 		}
 	}
+	printMatrix(Res_Check,"Error-Check Matrix");
 	printf("Error Check finished\n");
-	
-	for(i=0;i<=MatSize;i++)
-	{
-		for(j=1;j<=MatSize+1;j++)
-		{
-			printf("%d\t",Res_Check.elements[((i*Res_Check.width)+j)-1]);
-		}
-		printf("\n");
-	}	
 }
 
 int matrixProduct(Matrix Mat1, Matrix Mat2,int row, int col)
 {
 	int k,sum;
 	sum=0;
-	for(k=1;k<=Mat1.width+1;k++)
+	for(k=1;k<=Mat1.width;k++)
 	{	
-		sum=sum+(Mat1.elements[((row*Mat1.width)+k)-1])*(Mat2.elements[(((k-1)*Mat2.width)+col)-1]);	
+		sum=sum+(Mat1.elements[(row*Mat1.width)+k])*(Mat2.elements[(k*Mat2.width)+col]);	
 	}
 	return sum;
 }
 
+void printMatrix(Matrix Mat, char name[])
+{
+	int j,k;
+	printf(name);
+	for(i=1;i<=MatSize;i++)
+		{
+			for(j=1;j<=MatSize;j++)
+				printf("%d\t",Result.elements[(i*Result.width)+j]);
+			printf("\n");
+		}
 
 __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res)
 {
@@ -142,9 +131,9 @@ __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res)
 	int col = blockIdx.y+1;
 	int k,sum;
 	sum=0;
-	for(k=1;k<=Mat1.width+1;k++)
+	for(k=1;k<=Mat1.width;k++)
 	{
-		sum=sum+(Mat1.elements[((row*Mat1.width)+k)-1])*(Mat2.elements[(((k-1)*Mat2.width)+col)-1]);
+		sum=sum+(Mat1.elements[(row*Mat1.width)+k])*(Mat2.elements[(k*Mat2.width)+col]);
 	}
-	Res.elements[((row*Res.width)+col)-1]=sum;
+	Res.elements[(row*Res.width)+col]=sum;
 }
