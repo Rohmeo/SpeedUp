@@ -87,9 +87,9 @@ main()
 	printf("Elapsed Time: %ld \n",/*((elapsed.tv_sec)*1000000)+*/(elapsed.tv_usec));
 	
 	//Check the output for errors
-	for(i=0;i<=MatSize;i++)
+	for(i=1;i<=MatSize;i++)
 	{
-		for(j=1;j<=MatSize+1;j++)
+		for(j=1;j<=MatSize;j++)
 		{
 			Res_Check.elements[(i*Res_Check.width)+j] = matrixProduct(Matrix1, Matrix2, i, j);
 			if(Res_Check.elements[(i*Res_Check.width)+j] != Result.elements[(i*Result.width)+j])
@@ -99,7 +99,7 @@ main()
 			}
 		}
 	}
-	printMatrix(Res_Check,"Error-Check Matrix");
+	printMatrix(Res_Check,"Error-Check Matrix\n");
 	printf("Error Check finished\n");
 }
 
@@ -116,24 +116,28 @@ int matrixProduct(Matrix Mat1, Matrix Mat2,int row, int col)
 
 void printMatrix(Matrix Mat, char name[])
 {
-	int j,k;
+	int i,j;
 	printf(name);
-	for(i=1;i<=MatSize;i++)
+	for(i=1;i<=Mat.width;i++)
 		{
-			for(j=1;j<=MatSize;j++)
-				printf("%d\t",Result.elements[(i*Result.width)+j]);
+			for(j=1;j<=Mat.width;j++)
+			{
+				printf("%d\t",Mat.elements[(i*Mat.width)+j]);
+			}
 			printf("\n");
 		}
+	return;
+}
 
 __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res)
 {
 	int row = blockIdx.x;
-	int col = blockIdx.y+1;
+	int col = blockIdx.y;
 	int k,sum;
 	sum=0;
-	for(k=1;k<=Mat1.width;k++)
-	{
-		sum=sum+(Mat1.elements[(row*Mat1.width)+k])*(Mat2.elements[(k*Mat2.width)+col]);
-	}
+	//for(k=1;k<=Mat1.width;k++)
+	//{
+		sum=(Mat1.elements[(row*Mat1.width)+1])*(Mat2.elements[(1*Mat2.width)+col])+(Mat1.elements[(row*Mat1.width)+2])*(Mat2.elements[(2*Mat2.width)+col])+(Mat1.elements[(row*Mat1.width)+3])*(Mat2.elements[(3*Mat2.width)+col]);
+	//}
 	Res.elements[(row*Res.width)+col]=sum;
 }
