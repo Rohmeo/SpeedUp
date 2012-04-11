@@ -10,7 +10,7 @@ typedef struct{
 
 __global__ void matrixProduct(Matrix, Matrix, Matrix, int, int);
 
-int matrixProduct(Matrix, Matrix, int, int);
+int hostMatrixProduct(Matrix, Matrix, int, int);
 void printMatrix(Matrix, char[]);
 
 main()
@@ -19,7 +19,7 @@ main()
 	int const MatSize=3;
 	Matrix Matrix1, Matrix2, Result, Res_Check;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result;
-	int division, numThreads;
+	int sections, numThreads;
 	int* startPoint, dev_startPoint;
 	
 	//For generalization purposes
@@ -31,7 +31,7 @@ main()
 	Result.width = MatSize; Result.height = MatSize;
 	Res_Check.width = MatSize; Res_Check.height = MatSize;
 	 
-	blockSize=numThreads;
+	dim3 blockSize=numThreads;
 	dim3 gridSize(1,1);
 
 	int i,j;
@@ -74,7 +74,7 @@ main()
 	cudaMemcpy(dev_Matrix2.elements, Matrix2.elements, MemSize, cudaMemcpyHostToDevice);
 	
 	cudaMalloc((void**)&dev_startPoint,sections*sizeof(int));
-	cudaMemcpy(dev_startPoint,startPoint,sections*sizeof(int),cudaMemcpyHostToDevice);
+	cudaMemcpy(&dev_startPoint,&startPoint,(sections*sizeof(int)),cudaMemcpyHostToDevice);
 	
 	dev_Result.height = Result.height; dev_Result.width = Result.width;
 	cudaMalloc((void**)&dev_Result.elements,MemSize);
@@ -149,7 +149,7 @@ void printMatrix(Matrix Mat, char name[])
 __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, int* start, int threadSize)
 {
 	int thread = blockIdx.x;
-	int k,sum,index;
+	int k,sum,index,row,col;
 	
 	sum=0;
 	for(index=start[thread];index<=(start[thread]+threadSize);index++)
