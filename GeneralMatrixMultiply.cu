@@ -8,7 +8,7 @@ typedef struct{
 	int* elements;
 } Matrix;
 
-__global__ void matrixProduct(Matrix, Matrix, Matrix, int, int);
+__global__ void matrixProduct(Matrix, Matrix, Matrix, int*, int);
 
 int hostMatrixProduct(Matrix, Matrix, int, int);
 void printMatrix(Matrix, char[]);
@@ -20,7 +20,7 @@ main()
 	Matrix Matrix1, Matrix2, Result, Res_Check;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result;
 	int sections, numThreads;
-	int* startPoint, dev_startPoint;
+	int *startPoint, *dev_startPoint;
 	
 	//For generalization purposes
 	numThreads = 3;
@@ -74,7 +74,7 @@ main()
 	cudaMemcpy(dev_Matrix2.elements, Matrix2.elements, MemSize, cudaMemcpyHostToDevice);
 	
 	cudaMalloc((void**)&dev_startPoint,sections*sizeof(int));
-	cudaMemcpy(&dev_startPoint,&startPoint,(sections*sizeof(int)),cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_startPoint,startPoint,(sections*sizeof(int)),cudaMemcpyHostToDevice);
 	
 	dev_Result.height = Result.height; dev_Result.width = Result.width;
 	cudaMalloc((void**)&dev_Result.elements,MemSize);
