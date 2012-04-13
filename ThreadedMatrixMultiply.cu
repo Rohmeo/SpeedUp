@@ -8,7 +8,7 @@ typedef struct{
 	int* elements;
 } Matrix;
 
-__global__ void matrixProduct(Matrix, Matrix, Matrix, Matrix, Matrix);
+__global__ void matrixProduct(Matrix, Matrix, Matrix/*, Matrix, Matrix*/);
 
 int matrixProduct(Matrix, Matrix, int, int);
 void printMatrix(Matrix, char[]);
@@ -16,13 +16,13 @@ void printMatrix(Matrix, char[]);
 main()
 {
 	//Declare vars, constants
-	int const MatSize=3;
-	Matrix Matrix1, Matrix2, Result, Res_Check, BlockRow, BlockCol;
-	Matrix dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol;
+	int const MatSize=9;
+	Matrix Matrix1, Matrix2, Result, Res_Check/*, BlockRow, BlockCol*/;
+	Matrix dev_Matrix1, dev_Matrix2, dev_Result/*, dev_BlockRow, dev_BlockCol*/;
 	
 	//Code to aid in debugging the non-determinism
-	BlockRow.height = MatSize; BlockRow.width = MatSize;
-	BlockCol.height = MatSize; BlockCol.width = MatSize;
+	//BlockRow.height = MatSize; BlockRow.width = MatSize;
+	//BlockCol.height = MatSize; BlockCol.width = MatSize;
 
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
 	Matrix2.width = MatSize; Matrix2.height = MatSize;
@@ -41,8 +41,8 @@ main()
 	Result.elements = (int*) malloc(MemSize);
 	Res_Check.elements = (int*) malloc(MemSize);
 	
-	BlockRow.elements = (int*) malloc(MemSize);
-	BlockCol.elements = (int*) malloc(MemSize);
+	//BlockRow.elements = (int*) malloc(MemSize);
+	//BlockCol.elements = (int*) malloc(MemSize);
 	
 	//Initialize matrices with random values
 	for(i=0;i<=MatSize;i++)
@@ -69,17 +69,17 @@ main()
 	dev_Result.height = Result.height; dev_Result.width = Result.width;
 	cudaMalloc((void**)&dev_Result.elements,MemSize);
 	
-	dev_BlockRow.height = BlockRow.height; dev_BlockRow.width = BlockRow.width;
-	dev_BlockCol.height = BlockCol.height; dev_BlockCol.width = BlockCol.width;
-	cudaMalloc((void**)&dev_BlockRow.elements,MemSize);
-	cudaMalloc((void**)&dev_BlockCol.elements,MemSize);
+	//dev_BlockRow.height = BlockRow.height; dev_BlockRow.width = BlockRow.width;
+	//dev_BlockCol.height = BlockCol.height; dev_BlockCol.width = BlockCol.width;
+	//cudaMalloc((void**)&dev_BlockRow.elements,MemSize);
+	//cudaMalloc((void**)&dev_BlockCol.elements,MemSize);
 		
 	//Kernel Declaration
-	matrixProduct<<<blockSize,gridSize>>>(dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol);
+	matrixProduct<<<blockSize,gridSize>>>(dev_Matrix1, dev_Matrix2, dev_Result/*, dev_BlockRow, dev_BlockCol*/);
 	
 	cudaMemcpy(Result.elements, dev_Result.elements, MemSize, cudaMemcpyDeviceToHost);
-	cudaMemcpy(BlockRow.elements, dev_BlockRow.elements, MemSize, cudaMemcpyDeviceToHost);
-	cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(BlockRow.elements, dev_BlockRow.elements, MemSize, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
 	
 	gettimeofday(&end,NULL);
 	printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
@@ -87,21 +87,21 @@ main()
 	printMatrix(Matrix1,"Matrix 1\n");
 	printMatrix(Matrix2, "Matrix 2\n");
 	printMatrix(Result, "Result Matrix\n");
-	printMatrix(BlockRow, "Compute Row Used\n");
-	printMatrix(BlockCol, "Compute Column Used\n");
+	//printMatrix(BlockRow, "Compute Row Used\n");
+	//printMatrix(BlockCol, "Compute Column Used\n");
 	
 	
 	//Compute time elapsed
 	
 	elapsed.tv_sec = (end.tv_sec-start.tv_sec);
-	if(end.tv_usec > start.tv_usec)
+	/*if(end.tv_usec > start.tv_usec)
 	{
 		elapsed.tv_usec = (end.tv_usec-start.tv_usec);
 	}
 	else
-	{
+	{*/
 		elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
-	}
+
 	printf("Elapsed Time: %ld \n",/*((elapsed.tv_sec)*1000000)+*/(elapsed.tv_usec));
 	
 	//Check the output for errors
@@ -147,7 +147,7 @@ void printMatrix(Matrix Mat, char name[])
 	return;
 }
 
-__global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, Matrix bkRow, Matrix bkCol)
+__global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res/*, Matrix bkRow, Matrix bkCol*/)
 {
 	int row = blockIdx.x;
 	int col = blockIdx.y;
@@ -157,7 +157,7 @@ __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, Matrix bkRow
 	{
 		sum=sum+(Mat1.elements[(row*(Mat1.width+1))+k])*(Mat2.elements[(k*(Mat2.width+1))+col]);
 	}
-	bkRow.elements[(row*(bkRow.width+1))+col]=row;
-	bkCol.elements[(row*(bkRow.width+1))+col]=col;
+	//bkRow.elements[(row*(bkRow.width+1))+col]=row;
+	//bkCol.elements[(row*(bkRow.width+1))+col]=col;
 	Res.elements[(row*(Res.width+1))+col]=sum;
 }
