@@ -73,11 +73,10 @@ main()
 	dev_BlockCol.height = BlockCol.height; dev_BlockCol.width = BlockCol.width;
 	cudaMalloc((void**)&dev_BlockRow.elements,MemSize);
 	cudaMalloc((void**)&dev_BlockCol.elements,MemSize);
-	cudaMemcpy(dev_BlockRow.elements, BlockRow.elements, MemSize, cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_BlockCol.elements, BlockCol.elements, MemSize, cudaMemcpyHostToDevice);
 		
 	//Kernel Declaration
 	matrixProduct<<<blockSize,gridSize>>>(dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol);
+	
 	cudaMemcpy(Result.elements, dev_Result.elements, MemSize, cudaMemcpyDeviceToHost);
 	cudaMemcpy(BlockRow.elements, dev_BlockRow.elements, MemSize, cudaMemcpyDeviceToHost);
 	cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
