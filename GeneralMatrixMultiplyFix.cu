@@ -16,7 +16,7 @@ void printMatrix(Matrix, char[]);
 main()
 {
 	//Declare vars, constants
-	int const MatSize=2;
+	int const MatSize=9;
 	Matrix Matrix1, Matrix2, Result, Res_Check, BlockRow, BlockCol;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol;
 	
@@ -27,8 +27,8 @@ main()
 	//For generalization purposes
 	int sections, numThreads;
 	int *startPoint, *dev_startPoint;
-	numThreads = 3;
-	sections=(MatSize*MatSize)/numThreads;
+	numThreads = 50;
+	sections=(((MatSize+1)*(MatSize+1))/numThreads);
 	
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
 	Matrix2.width = MatSize; Matrix2.height = MatSize;
@@ -60,6 +60,15 @@ main()
 			Matrix2.elements[(i*(Matrix1.width+1))+j]=(i*(Matrix1.width+1))+j;
 		}
 	}
+	
+	//Fill out the array of starting points in the matrix
+	startPoint[0]=0;
+	for(i=1;i<sections;i++)
+	{
+		startPoint[i]=startPoint[i-1]+sections;
+		printf("Starting element for thread %d is: %d \n", i,startPoint[i]);
+	}
+
 	gettimeofday(&start,NULL);
 	printf("Start Values %ld, %ld\n",start.tv_sec,start.tv_usec);
 	
@@ -123,7 +132,7 @@ main()
 			if(Res_Check.elements[(i*(Res_Check.width+1))+j] != Result.elements[(i*(Result.width+1))+j])
 			{
 				printf("Error found in row %d, column %d\n",i,j);
-				printf("Value in parallel: %d, Value in host comp: %d\n",Result.elements[(i*Result.width)+j],Res_Check.elements[(i*Res_Check.width)+j]);
+				printf("Value in parallel: %d, Value in host comp: %d\n",Result.elements[(i*(Result.width+1))+j],Res_Check.elements[(i*(Res_Check.width+1))+j]);
 			}
 		}
 	}
@@ -162,14 +171,14 @@ __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, Matrix bkRow
 	int thread = blockIdx.x;
 	int k,sum,index,row,col;
 	
-	sum=0;
-	for(index=start[thread];index<=(start[thread]+threadSize);index++)
+	for(index=start[thread];index<(start[thread]+threadSize);index++)
 	{
+		sum=0;
 		row = index / (Mat1.width+1);
 		col = index % (Mat1.width+1);
 		for(k=0;k<=Mat1.width;k++)
 		{
-			sum=sum+(Mat1.elements[(row*(Mat1.width+1))+k])*(Mat2.elements[(k*(Mat2.width+1))+col]);
+			sum=sum+((Mat1.elements[(row*(Mat1.width+1))+k])*(Mat2.elements[(k*(Mat2.width+1))+col]));
 		}
 		Res.elements[index]=sum;
 		bkRow.elements[index] = row;
