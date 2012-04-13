@@ -16,7 +16,7 @@ void printMatrix(Matrix, char[]);
 main()
 {
 	//Declare vars, constants
-	int const MatSize=9;
+	int const MatSize=2;
 	Matrix Matrix1, Matrix2, Result, Res_Check;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result;
 	
