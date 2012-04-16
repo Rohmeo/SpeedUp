@@ -39,7 +39,7 @@ main()
 	dim3 gridSize(1,1);
 
 	int i,j;
-	struct timeval start, elapsed, end;
+	struct timeval start, elapsed, end, err_start, err_end, err_elapsed;
 
 	size_t MemSize = (MatSize+1) * (MatSize+1) * sizeof(int);
 	Matrix1.elements = (int*) malloc(MemSize);
@@ -103,25 +103,18 @@ main()
 	gettimeofday(&end,NULL);
 	printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
 	
-	printMatrix(Matrix1,"Matrix 1\n");
-	printMatrix(Matrix2, "Matrix 2\n");
-	printMatrix(Result, "Result Matrix\n");
-	printMatrix(BlockRow, "Compute Row Used\n");
-	printMatrix(BlockCol, "Compute Column Used\n");
+	//printMatrix(Matrix1,"Matrix 1\n");
+	//printMatrix(Matrix2, "Matrix 2\n");
+	//printMatrix(Result, "Result Matrix\n");
+	//printMatrix(BlockRow, "Compute Row Used\n");
+	//printMatrix(BlockCol, "Compute Column Used\n");
 	
 	
 	//Compute time elapsed
 	
 	elapsed.tv_sec = (end.tv_sec-start.tv_sec);
-	/*if(end.tv_usec > start.tv_usec)
-	{
-		elapsed.tv_usec = (end.tv_usec-start.tv_usec);
-	}
-	else
-	{*/
-		elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
-
-	printf("Elapsed Time: %ld \n",/*((elapsed.tv_sec)*1000000)+*/(elapsed.tv_usec));
+	elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
+	printf("Elapsed Time: %ld \n",(elapsed.tv_usec));
 	
 	//Check the output for errors
 	for(i=0;i<=MatSize;i++)
@@ -136,7 +129,7 @@ main()
 			}
 		}
 	}
-	printMatrix(Res_Check,"Error-Check Matrix\n");
+	//printMatrix(Res_Check,"Error-Check Matrix\n");
 	printf("Error Check finished\n");
 }
 
