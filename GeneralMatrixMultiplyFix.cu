@@ -16,7 +16,7 @@ void printMatrix(Matrix, char[]);
 main()
 {
 	//Declare vars, constants
-	int const MatSize=9;
+	int const MatSize=999;
 	Matrix Matrix1, Matrix2, Result, Res_Check, BlockRow, BlockCol;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol;
 	
@@ -27,7 +27,7 @@ main()
 	//For generalization purposes
 	int sections, numThreads;
 	int *startPoint, *dev_startPoint;
-	numThreads = 50;
+	numThreads = 100;
 	sections=(((MatSize+1)*(MatSize+1))/numThreads);
 	
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
@@ -66,7 +66,7 @@ main()
 	for(i=1;i<sections;i++)
 	{
 		startPoint[i]=startPoint[i-1]+sections;
-		printf("Starting element for thread %d is: %d \n", i,startPoint[i]);
+		//printf("Starting element for thread %d is: %d \n", i,startPoint[i]);
 	}
 
 	gettimeofday(&start,NULL);
@@ -101,7 +101,7 @@ main()
 	cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
 	
 	gettimeofday(&end,NULL);
-	printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
+	//printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
 	
 	//printMatrix(Matrix1,"Matrix 1\n");
 	//printMatrix(Matrix2, "Matrix 2\n");
