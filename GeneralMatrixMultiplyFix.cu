@@ -8,7 +8,7 @@ typedef struct{
 	int* elements;
 } Matrix;
 
-__global__ void matrixProduct(Matrix, Matrix, Matrix, Matrix, Matrix, int*, int);
+__global__ void matrixProduct(Matrix, Matrix, Matrix/*, Matrix, Matrix*/, int*, int);
 
 int matrixProduct(Matrix, Matrix, int, int);
 void printMatrix(Matrix, char[]);
@@ -18,16 +18,16 @@ main()
 	//Declare vars, constants
 	int const MatSize=999;
 	Matrix Matrix1, Matrix2, Result, Res_Check, BlockRow, BlockCol;
-	Matrix dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol;
+	Matrix dev_Matrix1, dev_Matrix2, dev_Result;//, dev_BlockRow, dev_BlockCol;
 	
 	//Debug Code
-	BlockRow.height = MatSize; BlockRow.width = MatSize;
-	BlockCol.height = MatSize; BlockCol.width = MatSize;
+	//BlockRow.height = MatSize; BlockRow.width = MatSize;
+	//BlockCol.height = MatSize; BlockCol.width = MatSize;
 	
 	//For generalization purposes
 	int sections, numThreads;
 	int *startPoint, *dev_startPoint;
-	numThreads = 100;
+	numThreads = 1000;
 	sections=(((MatSize+1)*(MatSize+1))/numThreads);
 	
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
@@ -48,8 +48,8 @@ main()
 	Res_Check.elements = (int*) malloc(MemSize);
 	startPoint = (int*) malloc(sections*sizeof(int));
 	
-	BlockRow.elements = (int*) malloc(MemSize);
-	BlockCol.elements = (int*) malloc(MemSize);
+	//BlockRow.elements = (int*) malloc(MemSize);
+	//BlockCol.elements = (int*) malloc(MemSize);
 	
 	//Initialize matrices with random values
 	for(i=0;i<=MatSize;i++)
@@ -70,7 +70,7 @@ main()
 	}
 
 	gettimeofday(&start,NULL);
-	printf("Start Values %ld, %ld\n",start.tv_sec,start.tv_usec);
+	//printf("Start Values %ld, %ld\n",start.tv_sec,start.tv_usec);
 	
 	//Transfer matrices to device memory
 	
@@ -85,20 +85,20 @@ main()
 	cudaMalloc((void**)&dev_startPoint,sections*sizeof(int));
 	cudaMemcpy(dev_startPoint,startPoint,(sections*sizeof(int)),cudaMemcpyHostToDevice);
 	
-	dev_BlockRow.height = BlockRow.height; dev_BlockRow.width = BlockRow.width;
-	dev_BlockCol.height = BlockCol.height; dev_BlockCol.width = BlockCol.width;
-	cudaMalloc((void**)&dev_BlockRow.elements,MemSize);
-	cudaMalloc((void**)&dev_BlockCol.elements,MemSize);
+	//dev_BlockRow.height = BlockRow.height; dev_BlockRow.width = BlockRow.width;
+	//dev_BlockCol.height = BlockCol.height; dev_BlockCol.width = BlockCol.width;
+	//cudaMalloc((void**)&dev_BlockRow.elements,MemSize);
+	//cudaMalloc((void**)&dev_BlockCol.elements,MemSize);
 	
 	dev_Result.height = Result.height; dev_Result.width = Result.width;
 	cudaMalloc((void**)&dev_Result.elements,MemSize);
 	
 		
 	//Kernel Declaration
-	matrixProduct<<<blockSize,gridSize>>>(dev_Matrix1, dev_Matrix2, dev_Result, dev_BlockRow, dev_BlockCol, dev_startPoint, sections);
+	matrixProduct<<<blockSize,gridSize>>>(dev_Matrix1, dev_Matrix2, dev_Result/*, dev_BlockRow, dev_BlockCol*/, dev_startPoint, sections);
 	cudaMemcpy(Result.elements, dev_Result.elements, MemSize, cudaMemcpyDeviceToHost);
-	cudaMemcpy(BlockRow.elements, dev_BlockRow.elements, MemSize, cudaMemcpyDeviceToHost);
-	cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(BlockRow.elements, dev_BlockRow.elements, MemSize, cudaMemcpyDeviceToHost);
+	//cudaMemcpy(BlockCol.elements, dev_BlockCol.elements, MemSize, cudaMemcpyDeviceToHost);
 	
 	gettimeofday(&end,NULL);
 	//printf("End Values %ld, %ld\n",end.tv_sec,end.tv_usec);
@@ -114,21 +114,35 @@ main()
 	
 	elapsed.tv_sec = (end.tv_sec-start.tv_sec);
 	elapsed.tv_usec = (((elapsed.tv_sec*1000000)+end.tv_usec)-start.tv_usec);
-	printf("Elapsed Time: %ld \n",(elapsed.tv_usec));
+	printf("Elapsed Time: %ld \n",elapsed.tv_usec);
 	
-	//Check the output for errors
+	//Check the output for errors, includes timing to compare parallel to host computation
+	gettimeofday(&err_start, NULL);
 	for(i=0;i<=MatSize;i++)
 	{
 		for(j=0;j<=MatSize;j++)
 		{
 			Res_Check.elements[(i*(Res_Check.width+1))+j] = matrixProduct(Matrix1, Matrix2, i, j);
-			if(Res_Check.elements[(i*(Res_Check.width+1))+j] != Result.elements[(i*(Result.width+1))+j])
+		}
+	}
+	gettimeofday(&err_end, NULL);
+
+	for(i=0;i<=MatSize;i++){
+		for(j=0;j<=MatSize;j++){
+			if(Res_Check.elements[(i*(Res_Check.width+1))+j] != Result.elements[(i*(Result.width+1))+j])		
 			{
 				printf("Error found in row %d, column %d\n",i,j);
 				printf("Value in parallel: %d, Value in host comp: %d\n",Result.elements[(i*(Result.width+1))+j],Res_Check.elements[(i*(Res_Check.width+1))+j]);
 			}
 		}
-	}
+	}	
+	err_elapsed.tv_sec = (err_end.tv_sec-err_start.tv_sec);
+	err_elapsed.tv_usec = (((err_elapsed.tv_sec*1000000)+err_end.tv_usec)-err_start.tv_usec);
+	//printf("Start Time: %ld\n", err_start.tv_usec);
+	//printf("End Time: %ld\n", err_end.tv_usec);
+	printf("Elapsed Error Time: %ld \n",err_elapsed.tv_usec);
+	
+	
 	//printMatrix(Res_Check,"Error-Check Matrix\n");
 	printf("Error Check finished\n");
 }
@@ -159,7 +173,7 @@ void printMatrix(Matrix Mat, char name[])
 	return;
 }
 
-__global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, Matrix bkRow, Matrix bkCol, int* start, int threadSize)
+__global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res/*, Matrix bkRow, Matrix bkCol*/, int* start, int threadSize)
 {
 	int thread = blockIdx.x;
 	int k,sum,index,row,col;
@@ -174,8 +188,8 @@ __global__ void matrixProduct(Matrix Mat1, Matrix Mat2, Matrix Res, Matrix bkRow
 			sum=sum+((Mat1.elements[(row*(Mat1.width+1))+k])*(Mat2.elements[(k*(Mat2.width+1))+col]));
 		}
 		Res.elements[index]=sum;
-		bkRow.elements[index] = row;
-		bkCol.elements[index] = col;
+		//bkRow.elements[index] = row;
+		//bkCol.elements[index] = col;
 	}
 	
 	/*int row = blockIdx.x;
