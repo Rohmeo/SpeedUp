@@ -29,13 +29,13 @@ main(){
 	
 	
 	//prepare the 'division' variable
-	for(i=0;i<numThreads;i++){
-		if(i==0){division[i]=0;}	
-		else {division[i] = range/i;}
-		for(j=0;j<length;j++){		//this loop prepares the starting values guessing (first two to '0', 2nd pair to '0'+25, etc.)
-			start[(i*length)+j] = '0'+division[i];
-		}
-	}
+	//for(i=0;i<numThreads;i++){
+	//	if(i==0){division[i]=0;}	
+	//	else {division[i] = range/i;}
+	//	for(j=0;j<length;j++){		//this loop prepares the starting values guessing (first two to '0', 2nd pair to '0'+25, etc.)
+	//		start[(i*length)+j] = '0'+division[i];
+	//	}
+	//}
 
 	//Create space on device, copy to device (password, division, start need to be copied)
 	cudaMalloc((void**)&dev_pass, strSize);
@@ -76,19 +76,19 @@ __global__ void passCrack(int length, int* debug, char* pass, char* division, ch
 	
 	debug[thread] = thread;
 	
-	for(i=0;i<top;i++){
-		start[(thread*length)+1]='0';  
+	for(i=0;i<75;i++){
+		start[/*(thread*length)+*/1]='0';  
 		for(j=0;j<75;j++){
-			if(strTest(&pass[0],&start[thread*length]) == 1){
+			if(strTest(&pass[0],&start[0/*thread*length]*/) == 1){
 				debug[1] = 9;
 				//This code is written to run on each core, but will only execute once, on the one where the password is matched
 				for(cpy=0;cpy<length;cpy++){
-					answer[cpy]=start[(thread*length)+cpy];
+					answer[cpy]=start[/*(thread*length)+*/cpy];
 				}
-			start[(thread*length)+1]++;
+			start[/*(thread*length)+*/1]++;
 			}
 		}
-		start[thread*length]++;
+		start[/*thread*length*/0]++;
 	}
 }
 
