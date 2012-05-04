@@ -16,7 +16,7 @@ void printMatrix(Matrix, char[]);
 main()
 {
 	//Declare vars, constants
-	int const MatSize=999;
+	int const MatSize=9;
 	Matrix Matrix1, Matrix2, Result, Res_Check, BlockRow, BlockCol;
 	Matrix dev_Matrix1, dev_Matrix2, dev_Result;//, dev_BlockRow, dev_BlockCol;
 	
@@ -27,7 +27,7 @@ main()
 	//For generalization purposes
 	int sections, numThreads;
 	int *startPoint, *dev_startPoint;
-	numThreads = 1000;
+	numThreads = 20;
 	sections=(((MatSize+1)*(MatSize+1))/numThreads);
 	
 	Matrix1.width = MatSize; Matrix1.height = MatSize;
@@ -46,7 +46,7 @@ main()
 	Matrix2.elements = (int*) malloc(MemSize);
 	Result.elements = (int*) malloc(MemSize);
 	Res_Check.elements = (int*) malloc(MemSize);
-	startPoint = (int*) malloc(sections*sizeof(int));
+	startPoint = (int*) malloc(numThreads*sizeof(int));
 	
 	//BlockRow.elements = (int*) malloc(MemSize);
 	//BlockCol.elements = (int*) malloc(MemSize);
@@ -56,17 +56,17 @@ main()
 	{
 		for(j=0;j<=MatSize;j++)
 		{
-			Matrix1.elements[(i*(Matrix1.width+1))+j]=(i*(Matrix1.width+1))+j;
-			Matrix2.elements[(i*(Matrix1.width+1))+j]=(i*(Matrix1.width+1))+j;
+			Matrix1.elements[(i*(Matrix1.width+1))+j]=rand();//(i*(Matrix1.width+1))+j;
+			Matrix2.elements[(i*(Matrix1.width+1))+j]=rand();//(i*(Matrix1.width+1))+j;
 		}
 	}
 	
 	//Fill out the array of starting points in the matrix
 	startPoint[0]=0;
-	for(i=1;i<sections;i++)
+	for(i=1;i<numThreads;i++)
 	{
 		startPoint[i]=startPoint[i-1]+sections;
-		//printf("Starting element for thread %d is: %d \n", i,startPoint[i]);
+		printf("Starting element for thread %d is: %d \n", i,startPoint[i]);
 	}
 
 	gettimeofday(&start,NULL);

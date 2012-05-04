@@ -4,7 +4,7 @@
 
 __global__ void passCrack(int, int*, char*,char*, char*, char*); //variables are length, password, list of divisions within the guessing area, answer, and starting guesses
 
-__device__ char strTest(char*, char*);
+__device__ char strTest(char*, char*, int*);
 
 main(){
 	int i,j;
@@ -47,7 +47,6 @@ main(){
 	cudaMalloc((void**)&dev_debug, (numThreads*sizeof(int)));
 
 	cudaMalloc((void**)&dev_answer, strSize);
-	cudaMemcpy(dev_answer, answer, strSize, cudaMemcpyHostToDevice);
 	
 	cudaMalloc((void**)&dev_division,(numThreads*sizeof(char)));
 	cudaMemcpy(dev_division, division, (numThreads*sizeof(char)),cudaMemcpyHostToDevice);
@@ -73,31 +72,40 @@ __global__ void passCrack(int length, int* debug, char* pass, char* division, ch
 	int thread = blockIdx.x;
 	int top = 75/blockDim.x;
 	int i,j,k,cpy;
-	
+	start[0] = '0';
+	start[1] = '0';	
 	debug[thread] = thread;
 	
 	for(i=0;i<75;i++){
-		start[/*(thread*length)+*/1]='0';  
+		start[1]='0';  
 		for(j=0;j<75;j++){
-			if(strTest(&pass[0],&start[0/*thread*length]*/) == 1){
+			if(strTest(&pass[0],&start[0],&debug[0]) == 1){
 				debug[1] = 9;
 				//This code is written to run on each core, but will only execute once, on the one where the password is matched
 				for(cpy=0;cpy<length;cpy++){
-					answer[cpy]=start[/*(thread*length)+*/cpy];
+					answer[cpy]=start[cpy];
 				}
-			start[/*(thread*length)+*/1]++;
+			start[1]++;
 			}
 		}
-		start[/*thread*length*/0]++;
+		start[0]++;
 	}
 }
 
-__device__ char strTest(char* pass, char* guess){
+__device__ char strTest(char* pass, char* guess,int* debug){
 	if(guess[0]==pass[0]){
 		if(guess[1]==pass[1]){
+			debug[2] = 10;
 			return 1;
 		}
-		else return 0;
+		else{
+			debug[1]=10;
+			return 0;
+		}
 	}
-	else return 0;
+
+	else{ 
+		debug[0] = 10;
+		return 0;
+	}
 }
