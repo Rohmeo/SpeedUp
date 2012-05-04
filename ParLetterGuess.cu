@@ -76,19 +76,17 @@ __global__ void passCrack(int length, int* debug, char* pass, char* division, ch
 	start[1] = '0';	
 	debug[thread] = thread;
 	
-	for(i=0;i<75;i++){
+	for(start[0]='0';start[0]<'{';start[0]++){
 		start[1]='0';  
-		for(j=0;j<75;j++){
+		for(start[1]='0';start[1]<'{';start[1]++){
 			if(strTest(&pass[0],&start[0],&debug[0]) == 1){
 				debug[1] = 9;
 				//This code is written to run on each core, but will only execute once, on the one where the password is matched
 				for(cpy=0;cpy<length;cpy++){
 					answer[cpy]=start[cpy];
 				}
-			start[1]++;
 			}
 		}
-		start[0]++;
 	}
 }
 

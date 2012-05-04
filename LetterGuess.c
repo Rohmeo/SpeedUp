@@ -12,28 +12,21 @@ main(){
 	gettimeofday(&start, NULL);
 	char c[4] = "0000";
 	int i,j,k,l;
-		for(i=0;i<75;i++)
+		for(c[0]='0';c[0]<'{';c[0]++)
 			{	
-				c[1]='0';
-				for(j=0;j<75;j++)
+				for(c[1]='0';c[1]<'{';c[1]++)
 				{
-					c[2]='0';
-					for(k=0;k<75;k++)
+					for(c[2]='0';c[2]<'{';c[2]++)
 					{
-						c[3]='0';
-						for(l=0;l<75;l++)
+						for(c[3]='0';c[3]<'{';c[3]++)
 							{
 								if(strTest(&pass[0],&c[0])==1){
 									printf("The Password is '%c%c%c%c'\n", c[0],c[1],c[2],c[3]);
 									gettimeofday(&cracked,NULL);
 								}
-								c[3]++;
 							}
-						c[2]++;
 					}
-					c[1]++;
 				}
-				c[0]++;
 			}
 	//Timing Computations
 	elapsed.tv_sec = (cracked.tv_sec-start.tv_sec);
